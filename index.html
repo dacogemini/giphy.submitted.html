@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Farm Giphy</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
+        crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+        crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Anton|Fredoka+One|Luckiest+Guy" rel="stylesheet">
+    <style>
+        .img {
+            background-size: 1400px 900px;
+            background-repeat: no-repeat;
+        }
+
+        .main-txt {
+            font-family: 'Anton', sans-serif;
+            margin-top: 30px;
+            font-size: 48px;
+            color: brown;
+        }
+
+        .btn-lg {
+            margin: 15px;
+        }
+
+        .animal-input {
+            margin: 0px;
+        }
+
+        .animal-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 25%;
+            height: auto;
+            margin-left: 30px;
+        }
+    </style>
+</head>
+
+<body background="http://moziru.com/images/farm-clipart-farm-background-19.jpg" class="img">
+
+    <center>
+        <h1 class="main-txt">Add an Animal</h1>
+    </center>
+
+    <div id="animal-buttons" class="animal-buttons"></div>
+    <!-- Holds dynamically generated buttons -->
+    <form id="animal-form" class="form">
+        <center>
+            <input type="text" id="animal-input">
+            <br>
+            <button type="submit" class="btn btn-dark btn-lg" id="add-animal" value="submit">SEARCH</button>
+        </center>
+    </form>
+    <div id="animals"></div>
+
+    <!--======================================================
+//                                                      
+//   ####   ####  #####    ##  #####   ######   ####  
+//  ##     ##     ##  ##   ##  ##  ##    ##    ##     
+//   ###   ##     #####    ##  #####     ##     ###   
+//     ##  ##     ##  ##   ##  ##        ##       ##  
+//  ####    ####  ##   ##  ##  ##        ##    ####   
+//                                                      
+//======================================================-->
+    <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyC2vCbcYVBMnMtc0pZoaHOV5ly0FJcZ2S0",
+            authDomain: "giphy-36c75.firebaseapp.com",
+            databaseURL: "https://giphy-36c75.firebaseio.com",
+            projectId: "giphy-36c75",
+            storageBucket: "",
+            messagingSenderId: "831532173250"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <script type="text/javascript">
+        // =========================================================
+        // Doc Ready (jquery) ===========================================================================
+        $(function () {
+            // create an array of strings, each one related to a topic that interests you.Save it to a variable called topics
+            var topics = ["pigs", "cows", "chickens", "sheep"];
+            // DEBUG
+            console.log(topics);
+            /* renderButton FUNCTION */
+            function renderButtons() {
+                $("#animal-buttons").empty(); // Clears all children from animal-buttons id
+                for (var i = 0; i < topics.length; i++) {
+                    var a = $("<button>"); // Add a <button> 
+                    a.addClass("animal"); // Add a CLASS 
+                    a.attr("data-name", topics[i]); // Add a data-attribute with a value of the array "topics" at index i
+                    a.text(topics[i]); // Providing the button's text with a value of the array "topics" at index i
+                    $("#animal-buttons").append(a); // Adding the button to the HTML
+                }
+            }
+            $(document).on("click", ".animal", function (event) {
+                var animal = $(this).attr("data-name");
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + animal +
+                    "&api_key=o98EX203IDhFreyhyLMErmPhKcVgQw2y&limit=10";
+
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                }).done(function (response) {
+                    console.log(queryURL);
+                    console.log(response);
+                    var results = response.data; //response is the object that contains the array
+
+                    $("#animals").empty()
+                    for (var i = 0; i < response.data.length; i++) {
+                        // Creating and storing a div tag:
+                        var animalDiv = $("<div class='col-md-4'>");
+                        // Change object to a string:
+                        $(animalDiv).text(JSON.stringify(response));
+                        // Creating a paragraph tag with the result item's rating:
+                        var p = $("<p>").text("Rating: " + results[i].rating);
+                        // Creating and storing an image tag
+                        var animalImage = $("<img>");
+                        // Adding attributes
+                      $(animalImage).attr("src", results[i].images.fixed_height.url);   
+                      $(animalImage).attr("data-still", results[i].images.fixed_height_still.url);
+                      $(animalImage).attr("data-animate", results[i].images.fixed_height.url);
+                      $(animalImage).attr("data-state", "still");
+                        // Appending the paragraph and image tag to the animals div
+                        // Remember: .html will empty the entire html contents of your element and set it to the value you give it. Do you want that to happen here?
+
+                        $("#animals").append(p);
+                        $("#animals").append(animalImage);
+
+
+                                $(document).on("click", "img", function (event) {
+                                    // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+                                    var state = $(this).attr("data-state");
+                                    // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+                                    // Then, set the image's data-state to animate
+                                    // Else set src to the data-still value
+                                    if (state === "still") {
+                                     $(this).attr("src", $("data-animate"));
+                                     $(this).attr("data-state", "animate");
+                                    } else {
+                                        $(this).attr("src", $(this).attr("data-still"));
+                                        $(this).attr("data-state", "animate");
+                                        
+                                    }
+                            });
+                            }
+                            })
+                }) 
+            $("#add-animal").on("click", function (event) {
+                // event.preventDefault() prevents the form from trying to submit itself.
+                event.preventDefault();
+                var animal = $("#animal-input").val().trim(); // This line will grab the text from the input box
+                topics.push(animal); // The input from the textbox is then added to our array
+                // calling renderButtons which handles the processing of our topics array
+                renderButtons();
+
+
+            });
+            renderButtons();
+
+        });
+        // This function allows you to update your page in real-time when the firebase database changes.
+        //  database.ref().on("value", function(snapshot) {
+    </script>
+</body>
+
+</html>
